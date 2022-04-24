@@ -2,10 +2,15 @@
 # NabComAu
 
 # 20220424
-# 0.0.0
+# 0.1.0
 
 # Notes:
 # 1. Derived from WestpacComAu.rb 0.5.3 and MarketindexComAu 0.0.0.
+
+# Changes:
+# 1. + bpay()
+# 2. + transfer_and_pay_button()
+# 3. + bill_payment_link()
 
 require 'WebAccount'
 
@@ -37,6 +42,24 @@ module NabComAu
       @driver = driver
     end
 
+    def transfer_and_pay_button
+      driver.find_element(xpath: '//*[@id="transferPay"]/button')
+    end
+
+    def bill_payment_link
+      driver_wait.until do
+        driver.element_present?(:xpath, '//*[@id="transferPay"]/ul/li[1]/ul/li[4]/a')
+      end
+      driver.find_element(xpath: '//*[@id="transferPay"]/ul/li[1]/ul/li[4]/a')
+    end
+
+    def bpay
+      p 'bpay()'
+      p transfer_and_pay_button
+      transfer_and_pay_button.click
+      bill_payment_link.click
+    end
+
   end
 end
 
@@ -48,6 +71,7 @@ if __FILE__ == $0
   nab_account = NabComAu::Account.new(username: ARGV[0], password: ARGV[1])
   nab_account.driver = driver
   nab_account.login
-  sleep 60
+  nab_account.bpay
+  sleep 120
   # nab_account.shutdown
 end
