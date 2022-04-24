@@ -1,16 +1,19 @@
 # NabComAu.rb
 # NabComAu
 
-# 20220424
-# 0.1.0
+# 20220425
+# 0.1.1
 
 # Notes:
 # 1. Derived from WestpacComAu.rb 0.5.3 and MarketindexComAu 0.0.0.
 
-# Changes:
+# Changes: (Add BPay payments)
 # 1. + bpay()
 # 2. + transfer_and_pay_button()
 # 3. + bill_payment_link()
+# 0/1
+# 4. + bpay_bank_account_select_list()
+# 5. ~ bpay()
 
 require 'WebAccount'
 
@@ -43,21 +46,39 @@ module NabComAu
     end
 
     def transfer_and_pay_button
-      driver.find_element(xpath: '//*[@id="transferPay"]/button')
+      driver_wait.until do
+        @driver.element_present?(:xpath, '//*[@id="transferPay"]/button')
+      end
+      @driver.find_element(xpath: '//*[@id="transferPay"]/button')
     end
 
     def bill_payment_link
       driver_wait.until do
-        driver.element_present?(:xpath, '//*[@id="transferPay"]/ul/li[1]/ul/li[4]/a')
+        @driver.element_present?(:xpath, '//*[@id="transferPay"]/ul/li[1]/ul/li[4]/a')
       end
-      driver.find_element(xpath: '//*[@id="transferPay"]/ul/li[1]/ul/li[4]/a')
+      @driver.find_element(xpath: '//*[@id="transferPay"]/ul/li[1]/ul/li[4]/a')
     end
 
-    def bpay
-      p 'bpay()'
-      p transfer_and_pay_button
+    def bpay_bank_account_select_list
+      driver_wait.until do
+        @driver.element_present?(:xpath, '//*[@id="bodyContent"]/table/tbody/tr/td/table/tbody/tr/td[2]/div/div/table/tbody/tr/td/form/table[1]/tbody/tr[1]/td[2]/select')
+      end
+      @driver.find_element(xpath: '//*[@id="bodyContent"]/table/tbody/tr/td/table/tbody/tr/td[2]/div/div/table/tbody/tr/td/form/table[1]/tbody/tr[1]/td[2]/select')
+    end
+
+    def bpay_select_bank_account(account_name_or_number)
+      webdriver_select_list = Selenium::WebDriver::Support::Select.new(bpay_bank_account_select_list)
+      if option = webdriver_select_list.options.detect{|option| option.attribute(:text) =~ /#{account_name_or_number}/}
+        option.click
+      else
+        raise "Can't find supplied account number from the dropdown list."
+      end
+    end
+
+    def bpay(account_name_or_number:)
       transfer_and_pay_button.click
       bill_payment_link.click
+      bpay_select_bank_account(account_name_or_number)
     end
 
   end
@@ -71,7 +92,7 @@ if __FILE__ == $0
   nab_account = NabComAu::Account.new(username: ARGV[0], password: ARGV[1])
   nab_account.driver = driver
   nab_account.login
-  nab_account.bpay
+  nab_account.bpay(account_name_or_number: ARGV[2])
   sleep 120
   # nab_account.shutdown
 end
