@@ -2,7 +2,7 @@
 # NabComAu
 
 # 20220425
-# 0.1.3
+# 0.1.4
 
 # Notes:
 # 1. Derived from WestpacComAu.rb 0.5.3 and MarketindexComAu 0.0.0.
@@ -23,6 +23,10 @@
 # 10. + bpay_select_biller()
 # 11. + bpay_enter_biller_code()
 # 12. ~ bpay()
+# 3/4
+# 13. + bpay_submit_button()
+# 14. ~ bpay()
+# 15. ~ bpay_bank_account_select_list(), to use css name instead of xpath.
 
 require 'WebAccount'
 
@@ -88,12 +92,11 @@ module NabComAu
       @driver.find_element(xpath: '//*[@id="transferPay"]/ul/li[1]/ul/li[4]/a')
     end
 
-    # selectedAcctIndx
     def bpay_bank_account_select_list
       driver_wait.until do
-        @driver.element_present?(:xpath, '//*[@id="bodyContent"]/table/tbody/tr/td/table/tbody/tr/td[2]/div/div/table/tbody/tr/td/form/table[1]/tbody/tr[1]/td[2]/select')
+        @driver.element_present?(:css, '[name="selectedAcctIndx"]')
       end
-      @driver.find_element(xpath: '//*[@id="bodyContent"]/table/tbody/tr/td/table/tbody/tr/td[2]/div/div/table/tbody/tr/td/form/table[1]/tbody/tr[1]/td[2]/select')
+      @driver.find_element(css: '[name="selectedAcctIndx"]')
     end
 
     def bpay_biller_select_list
@@ -108,6 +111,10 @@ module NabComAu
         @driver.element_present?(:css, '[name="billerCode"]')
       end
       @driver.find_element(css: '[name="billerCode"]')
+    end
+
+    def bpay_submit_button
+      @driver.find_element(css: '[name="search"]')
     end
 
     def bpay_select_bank_account(account_name_or_number)
@@ -145,6 +152,7 @@ module NabComAu
       else # is a name, then use the select list
         bpay_select_biller(biller_name_or_code)
       end
+      bpay_submit_button.click
     end
 
   end
