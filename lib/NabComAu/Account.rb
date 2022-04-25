@@ -2,10 +2,11 @@
 # NabComAu
 
 # 20220425
-# 0.1.4
+# 0.1.5
 
 # Notes:
 # 1. Derived from WestpacComAu.rb 0.5.3 and MarketindexComAu 0.0.0.
+# 2. Searching by BPay biller code produces a substring match, hence even if the biller code is complete and correct, then an extra step is required.
 
 # Changes: (Add BPay payments)
 # 1. + bpay()
@@ -27,6 +28,9 @@
 # 13. + bpay_submit_button()
 # 14. ~ bpay()
 # 15. ~ bpay_bank_account_select_list(), to use css name instead of xpath.
+# 4/5
+# 16. + bpay_enter_biller_name()
+# 17. ~ bpay()
 
 require 'WebAccount'
 
@@ -113,6 +117,13 @@ module NabComAu
       @driver.find_element(css: '[name="billerCode"]')
     end
 
+    def bpay_biller_name_field
+      driver_wait.until do
+        @driver.element_present?(:css, '[name="billerName"]')
+      end
+      @driver.find_element(css: '[name="billerName"]')
+    end
+
     def bpay_submit_button
       @driver.find_element(css: '[name="search"]')
     end
@@ -133,14 +144,17 @@ module NabComAu
       webdriver_select_list = Selenium::WebDriver::Support::Select.new(bpay_biller_select_list)
       if option = webdriver_select_list.options.detect{|option| option.attribute(:text) =~ /#{biller_name}/}
         option.click
-      else
-        raise "Can't find supplied biller name from the dropdown list."
       end
     end
 
     def bpay_enter_biller_code(biller_code)
       bpay_biller_code_field.clear
       bpay_biller_code_field.send_keys(biller_code)
+    end
+
+    def bpay_enter_biller_name(biller_name)
+      bpay_biller_name_field.clear
+      bpay_biller_name_field.send_keys(biller_name)
     end
 
     def bpay(account_name_or_number:, biller_name_or_code:)
@@ -150,7 +164,9 @@ module NabComAu
       if biller_name_or_code.match(/^\d+$/) # is a number, then enter code
         bpay_enter_biller_code(biller_name_or_code)
       else # is a name, then use the select list
-        bpay_select_biller(biller_name_or_code)
+        unless bpay_select_biller(biller_name_or_code) # If the the string can't be found in the dropdown list, then use the search field...
+          bpay_enter_biller_name(biller_name_or_code)
+        end
       end
       bpay_submit_button.click
     end
