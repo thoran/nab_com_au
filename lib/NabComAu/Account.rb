@@ -2,7 +2,7 @@
 # NabComAu
 
 # 20220425
-# 0.1.1
+# 0.1.2
 
 # Notes:
 # 1. Derived from WestpacComAu.rb 0.5.3 and MarketindexComAu 0.0.0.
@@ -14,8 +14,31 @@
 # 0/1
 # 4. + bpay_bank_account_select_list()
 # 5. ~ bpay()
+# 1/2
+# 6. + Nab#to_nab_account_number_format()
+# 7. ~ bpay_select_bank_account()
 
 require 'WebAccount'
+
+module Nab
+  def to_nab_account_number_format(account_number)
+    return unless account_number.match(/^[\d-]+$/)
+    unless account_number.match(/^\d\d-\d\d\d-\d\d\d\d$/)
+      unless account_number.match(/^\d\d\d\d\d\d\d\d\d$/)
+        account_number.gsub!('-', '')
+      end
+      account_number_parts = account_number.split('')
+      new_account_number_parts = []
+      new_account_number_parts << "#{account_number_parts[0]}#{account_number_parts[1]}"
+      new_account_number_parts << "#{account_number_parts[2]}#{account_number_parts[3]}#{account_number_parts[4]}"
+      new_account_number_parts << "#{account_number_parts[5]}#{account_number_parts[6]}#{account_number_parts[7]}#{account_number_parts[8]}"
+      account_number = new_account_number_parts.join('-')
+    end
+    account_number
+  end
+
+  module_function :to_nab_account_number_format
+end
 
 module NabComAu
   class Account < WebAccount
@@ -25,7 +48,7 @@ module NabComAu
       login_page_username_field_id: 'userid',
       login_page_password_field_id: 'password',
       login_page_submit_button_id: 'loginBtn',
-      logout_button_id: '',
+      logout_button_id: 'logoutButton',
       logged_out_xpath: ''
     }
 
@@ -67,11 +90,14 @@ module NabComAu
     end
 
     def bpay_select_bank_account(account_name_or_number)
+      unless account_name_or_number.match(/[a-zA-Z]/)
+        account_name_or_number = Nab.to_nab_account_number_format(account_name_or_number)
+      end
       webdriver_select_list = Selenium::WebDriver::Support::Select.new(bpay_bank_account_select_list)
       if option = webdriver_select_list.options.detect{|option| option.attribute(:text) =~ /#{account_name_or_number}/}
         option.click
       else
-        raise "Can't find supplied account number from the dropdown list."
+        raise "Can't find supplied account name or number from the dropdown list."
       end
     end
 
