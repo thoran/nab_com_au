@@ -2,7 +2,7 @@
 # NabComAu
 
 # 20220425
-# 0.1.2
+# 0.1.3
 
 # Notes:
 # 1. Derived from WestpacComAu.rb 0.5.3 and MarketindexComAu 0.0.0.
@@ -17,6 +17,12 @@
 # 1/2
 # 6. + Nab#to_nab_account_number_format()
 # 7. ~ bpay_select_bank_account()
+# 2/3
+# 8. + bpay_biller_select_list()
+# 9. + bpay_biller_code_field()
+# 10. + bpay_select_biller()
+# 11. + bpay_enter_biller_code()
+# 12. ~ bpay()
 
 require 'WebAccount'
 
@@ -82,11 +88,26 @@ module NabComAu
       @driver.find_element(xpath: '//*[@id="transferPay"]/ul/li[1]/ul/li[4]/a')
     end
 
+    # selectedAcctIndx
     def bpay_bank_account_select_list
       driver_wait.until do
         @driver.element_present?(:xpath, '//*[@id="bodyContent"]/table/tbody/tr/td/table/tbody/tr/td[2]/div/div/table/tbody/tr/td/form/table[1]/tbody/tr[1]/td[2]/select')
       end
       @driver.find_element(xpath: '//*[@id="bodyContent"]/table/tbody/tr/td/table/tbody/tr/td[2]/div/div/table/tbody/tr/td/form/table[1]/tbody/tr[1]/td[2]/select')
+    end
+
+    def bpay_biller_select_list
+      driver_wait.until do
+        @driver.element_present?(:css, '[name="billerRef"]')
+      end
+      @driver.find_element(css: '[name="billerRef"]')
+    end
+
+    def bpay_biller_code_field
+      driver_wait.until do
+        @driver.element_present?(:css, '[name="billerCode"]')
+      end
+      @driver.find_element(css: '[name="billerCode"]')
     end
 
     def bpay_select_bank_account(account_name_or_number)
@@ -101,10 +122,29 @@ module NabComAu
       end
     end
 
-    def bpay(account_name_or_number:)
+    def bpay_select_biller(biller_name)
+      webdriver_select_list = Selenium::WebDriver::Support::Select.new(bpay_biller_select_list)
+      if option = webdriver_select_list.options.detect{|option| option.attribute(:text) =~ /#{biller_name}/}
+        option.click
+      else
+        raise "Can't find supplied biller name from the dropdown list."
+      end
+    end
+
+    def bpay_enter_biller_code(biller_code)
+      bpay_biller_code_field.clear
+      bpay_biller_code_field.send_keys(biller_code)
+    end
+
+    def bpay(account_name_or_number:, biller_name_or_code:)
       transfer_and_pay_button.click
       bill_payment_link.click
       bpay_select_bank_account(account_name_or_number)
+      if biller_name_or_code.match(/^\d+$/) # is a number, then enter code
+        bpay_enter_biller_code(biller_name_or_code)
+      else # is a name, then use the select list
+        bpay_select_biller(biller_name_or_code)
+      end
     end
 
   end
@@ -112,13 +152,13 @@ end
 
 if __FILE__ == $0
   options = Selenium::WebDriver::Chrome::Options.new
-  options.add_argument("--disable-blink-features=AutomationControlled")
-  driver = Selenium::WebDriver.for :chrome, options: options
+  options.add_argument('--disable-blink-features=AutomationControlled')
+  driver = Selenium::WebDriver.for(:chrome, capabilities: [options])
 
   nab_account = NabComAu::Account.new(username: ARGV[0], password: ARGV[1])
   nab_account.driver = driver
   nab_account.login
-  nab_account.bpay(account_name_or_number: ARGV[2])
+  nab_account.bpay(account_name_or_number: ARGV[2], biller_name_or_code: ARGV[3])
   sleep 120
   # nab_account.shutdown
 end
