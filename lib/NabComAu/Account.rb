@@ -1,8 +1,8 @@
 # NabComAu.rb
 # NabComAu
 
-# 20220425
-# 0.1.5
+# 20220425, 26
+# 0.1.6
 
 # Notes:
 # 1. Derived from WestpacComAu.rb 0.5.3 and MarketindexComAu 0.0.0.
@@ -31,6 +31,11 @@
 # 4/5
 # 16. + bpay_enter_biller_name()
 # 17. ~ bpay()
+# 5/6: Handle ambiguity when entering biller codes.
+# 18. + login(), so as to add delays, possibly temporary.
+# 19. + bpay_biller_direct_hit?()
+# 20. + bpay_search_result_selection()
+# 21. ~ bpay(), to make use of disambiguation methods above.
 
 require 'WebAccount'
 
@@ -76,6 +81,25 @@ module NabComAu
         logout_button_id: PAGE_IDS[:logout_button_id],
         logged_out_xpath: PAGE_IDS[:logged_out_xpath],
       )
+    end
+
+    def login(username: nil, password: nil)
+      @logged_in = false
+      username ||= self.username
+      password ||= self.password
+      attempts = 0
+      driver.attempt do
+        get_login_page
+        sleep 1
+        enter_username(username)
+        sleep 2
+        enter_password(password)
+        sleep 3
+        login_page_submit_button.click
+      end
+      # @logged_in = driver_wait.until do
+      #   driver.element_present?(:id, @logout_button_id)
+      # end
     end
 
     def driver=(driver)
@@ -145,6 +169,7 @@ module NabComAu
       if option = webdriver_select_list.options.detect{|option| option.attribute(:text) =~ /#{biller_name}/}
         option.click
       end
+      option
     end
 
     def bpay_enter_biller_code(biller_code)
@@ -155,6 +180,18 @@ module NabComAu
     def bpay_enter_biller_name(biller_name)
       bpay_biller_name_field.clear
       bpay_biller_name_field.send_keys(biller_name)
+    end
+
+    def bpay_biller_direct_hit?
+      if element = @driver.find_element(xpath: '//*[@class="pageTitle"]')
+        element.text.match(/New bill payment/)
+      end
+    end
+
+    def bpay_search_result_selection(bpay_biller_code)
+      # @driver.find_elements(xpath: '//*[@id="billerList"]/tbody/tr//td').each{|e| p e.text}
+      bpay_biller_cell = @driver.find_element(xpath: "//td[contains(text(), '#{bpay_biller_code}')]")
+      bpay_biller_cell.find_element(:xpath, '../td/a')
     end
 
     def bpay(account_name_or_number:, biller_name_or_code:)
@@ -169,6 +206,10 @@ module NabComAu
         end
       end
       bpay_submit_button.click
+      sleep 1
+      unless bpay_biller_direct_hit?
+        bpay_search_result_selection(biller_name_or_code).click
+      end
     end
 
   end
