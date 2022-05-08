@@ -1,8 +1,8 @@
 # NabComAu.rb
 # NabComAu
 
-# 20220425, 26
-# 0.1.6
+# 20220508
+# 0.1.7
 
 # Notes:
 # 1. Derived from WestpacComAu.rb 0.5.3 and MarketindexComAu 0.0.0.
@@ -36,6 +36,14 @@
 # 19. + bpay_biller_direct_hit?()
 # 20. + bpay_search_result_selection()
 # 21. ~ bpay(), to make use of disambiguation methods above.
+# 6/7: New bill payment page
+# 22. + bpay_customer_reference_number_field()
+# 23. + bpay_enter_customer_reference_number()
+# 24. + bpay_payment_amount_field()
+# 25. + bpay_enter_payment_amount()
+# 26. + bpay_new_bill_payment_next_button()
+# 27. + new_bill_payment()
+# 28. ~ bpay(), to make use of the methods above.
 
 require 'WebAccount'
 
@@ -189,15 +197,54 @@ module NabComAu
     end
 
     def bpay_search_result_selection(bpay_biller_code)
-      # @driver.find_elements(xpath: '//*[@id="billerList"]/tbody/tr//td').each{|e| p e.text}
       bpay_biller_cell = @driver.find_element(xpath: "//td[contains(text(), '#{bpay_biller_code}')]")
       bpay_biller_cell.find_element(:xpath, '../td/a')
     end
 
-    def bpay(account_name_or_number:, biller_name_or_code:)
+    # New bill payment
+
+    def bpay_customer_reference_number_field
+      @driver.find_element(:name, 'custRefNumber')
+    end
+
+    def bpay_enter_customer_reference_number(customer_reference_number)
+      bpay_customer_reference_number_field.clear
+      bpay_customer_reference_number_field.send_keys(customer_reference_number)
+    end
+
+    def bpay_payment_amount_field
+      @bpay_payment_amount_field ||= (
+        driver_wait.until do
+          @driver.element_present?(:css, '[name="paymentAmount"]')
+        end
+        @driver.find_element(css: '[name="paymentAmount"]')
+      )
+    end
+
+    def bpay_enter_payment_amount(amount)
+      bpay_payment_amount_field.clear
+      bpay_payment_amount_field.send_keys(amount)
+    end
+
+    def bpay_new_bill_payment_next_button
+      @bpay_new_bill_payment_next_button ||= (
+        driver_wait.until do
+          @driver.element_present?(:css, '[name="nextButton"]')
+        end
+        @driver.find_element(css: '[name="nextButton"]')
+      )
+    end
+
+    def new_bill_payment(customer_reference_number:, amount:)
+      bpay_enter_customer_reference_number(customer_reference_number)
+      bpay_enter_payment_amount(amount)
+      bpay_new_bill_payment_next_button.click
+    end
+
+    def bpay(source_bank_account_name_or_number:, biller_name_or_code:, customer_reference_number:, amount:)
       transfer_and_pay_button.click
       bill_payment_link.click
-      bpay_select_bank_account(account_name_or_number)
+      bpay_select_bank_account(source_bank_account_name_or_number)
       if biller_name_or_code.match(/^\d+$/) # is a number, then enter code
         bpay_enter_biller_code(biller_name_or_code)
       else # is a name, then use the select list
@@ -210,6 +257,8 @@ module NabComAu
       unless bpay_biller_direct_hit?
         bpay_search_result_selection(biller_name_or_code).click
       end
+      sleep 1
+      new_bill_payment(customer_reference_number: customer_reference_number, amount: amount)
     end
 
   end
@@ -223,7 +272,7 @@ if __FILE__ == $0
   nab_account = NabComAu::Account.new(username: ARGV[0], password: ARGV[1])
   nab_account.driver = driver
   nab_account.login
-  nab_account.bpay(account_name_or_number: ARGV[2], biller_name_or_code: ARGV[3])
+  nab_account.bpay(source_bank_account_name_or_number: ARGV[2], biller_name_or_code: ARGV[3], customer_reference_number: ARGV[4], amount: ARGV[5])
   sleep 120
   # nab_account.shutdown
 end
