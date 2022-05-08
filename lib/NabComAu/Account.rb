@@ -2,7 +2,7 @@
 # NabComAu
 
 # 20220508
-# 0.1.7
+# 0.1.8
 
 # Notes:
 # 1. Derived from WestpacComAu.rb 0.5.3 and MarketindexComAu 0.0.0.
@@ -44,6 +44,12 @@
 # 26. + bpay_new_bill_payment_next_button()
 # 27. + new_bill_payment()
 # 28. ~ bpay(), to make use of the methods above.
+# 7/8: New bill payment confirmation page
+# 29. + bpay_password_field()
+# 30. + bpay_enter_password()
+# 31. + bpay_new_bill_payment_submit_button()
+# 32. + new_bill_payment_confirmation()
+# 33. ~ bpay(), to make use of confirmation methods above; and to make use of a passed in value for password.
 
 require 'WebAccount'
 
@@ -98,11 +104,11 @@ module NabComAu
       attempts = 0
       driver.attempt do
         get_login_page
-        sleep 1
+        # sleep 1
         enter_username(username)
-        sleep 2
+        # sleep 2
         enter_password(password)
-        sleep 3
+        # sleep 3
         login_page_submit_button.click
       end
       # @logged_in = driver_wait.until do
@@ -241,9 +247,41 @@ module NabComAu
       bpay_new_bill_payment_next_button.click
     end
 
-    def bpay(source_bank_account_name_or_number:, biller_name_or_code:, customer_reference_number:, amount:)
+    # New bill payment confirmation
+
+    def bpay_password_field
+      @bpay_password_field ||= (
+        driver_wait.until do
+          @driver.element_present?(:css, '[name="password"]')
+        end
+        @driver.find_element(css: '[name="password"]')
+      )
+    end
+
+    def bpay_enter_password(password)
+      bpay_password_field.clear
+      bpay_password_field.send_keys(password)
+    end
+
+    def bpay_new_bill_payment_submit_button
+      @bpay_new_bill_payment_submit_button ||= (
+        driver_wait.until do
+          @driver.element_present?(:css, '[name="nextButton"]')
+        end
+        @driver.find_element(css: '[name="nextButton"]')
+      )
+    end
+
+    def new_bill_payment_confirmation(password:)
+      bpay_enter_password(password)
+      bpay_new_bill_payment_submit_button.click
+    end
+
+    def bpay(source_bank_account_name_or_number:, biller_name_or_code:, customer_reference_number:, amount:, password:)
       transfer_and_pay_button.click
+      sleep 1
       bill_payment_link.click
+      sleep 1
       bpay_select_bank_account(source_bank_account_name_or_number)
       if biller_name_or_code.match(/^\d+$/) # is a number, then enter code
         bpay_enter_biller_code(biller_name_or_code)
@@ -259,6 +297,9 @@ module NabComAu
       end
       sleep 1
       new_bill_payment(customer_reference_number: customer_reference_number, amount: amount)
+      sleep 1
+      new_bill_payment_confirmation(password: password)
+      sleep 1
     end
 
   end
@@ -272,7 +313,13 @@ if __FILE__ == $0
   nab_account = NabComAu::Account.new(username: ARGV[0], password: ARGV[1])
   nab_account.driver = driver
   nab_account.login
-  nab_account.bpay(source_bank_account_name_or_number: ARGV[2], biller_name_or_code: ARGV[3], customer_reference_number: ARGV[4], amount: ARGV[5])
+  nab_account.bpay(
+    source_bank_account_name_or_number: ARGV[2],
+    biller_name_or_code: ARGV[3],
+    customer_reference_number: ARGV[4],
+    amount: ARGV[5],
+    password: ARGV[1]
+  )
   sleep 120
   # nab_account.shutdown
 end
