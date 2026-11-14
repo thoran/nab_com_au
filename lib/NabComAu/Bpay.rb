@@ -1,3 +1,8 @@
+# NabComAu/Bpay.rb
+# NabComAu::Bpay
+
+require_relative '../Nab'
+
 module NabComAu
   class Bpay < NabComAu::Account
     def initialize(source_bank_account_name_or_number: nil, biller_name_or_code: nil, customer_reference_number: nil, amount: nil)
@@ -170,6 +175,15 @@ module NabComAu
       customer_reference_number ||= @customer_reference_number
       amount ||= @amount
       password ||= @password
+      {
+        source_bank_account_name_or_number: source_bank_account_name_or_number,
+        biller_name_or_code: biller_name_or_code,
+        customer_reference_number: customer_reference_number,
+        amount: amount,
+        password: password
+      }.each do |name, value|
+        raise ArgumentError, "Can't pay without #{name}:." unless value
+      end
       transfer_and_pay_button.click
       sleep 1
       bill_payment_link.click

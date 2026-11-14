@@ -1,0 +1,114 @@
+# nab_com_au/CHANGELOG
+
+## 20261114
+
+0.2.1: NabComAu::Account#bpay pays, upon webaccount 0.7, with the account's browser and password.
+
+1. ~ NabComAu::Account: require 'webaccount', ~> 0.7, in place of WebAccount 0.2.5, the ids in PAGE_IDS being passed to it as selectors.
+2. /NabComAu::Account: attr_accessor :driver/attr_writer :driver/, so as WebAccount starts a browser where none is given.
+3. ~ NabComAu::Account#login: Raises ArgumentError where username: or password: is missing.
+4. ~ NabComAu::Account#bpay: Hands its browser to the NabComAu::Bpay, and pays with the account's password.
+5. ~ NabComAu::Account#transfer: Passes its own arguments to the NabComAu::Transfer, in place of target and customer_reference_number, which weren't defined; hands it its browser; and pays it.
+6. ~ NabComAu::Account: autoload :Bpay and :Transfer from beside lib/NabComAu/Account.rb, rather than from the load path.
+7. ~ lib/NabComAu/Bpay.rb: require_relative '../Nab', whose Nab.to_nab_account_number_format it calls.
+8. ~ NabComAu::Bpay#pay: Raises ArgumentError naming whichever of the payment's details or the password is missing, before going to the payment.
+9. ~ NabComAu::Transfer#pay: Raises NotImplementedError, rather than running the BPAY steps.
+10. - NabComAu::Transfer#transfer_and_pay_button, #transfer_link, and the BPAY methods copied from NabComAu::Bpay.
+11. ~ Nab.to_nab_account_number_format: Leaves the string it's given unchanged.
+12. ~ lib/NabComAu/Account.rb, lib/Nab.rb: The date, version and changes go from the headers, the CHANGELOG now carrying them. lib/NabComAu/Bpay.rb and lib/NabComAu/Transfer.rb are given headers.
+13. + CHANGELOG, with an entry for each version from 0.0.0.
+14. + Gemfile, + Rakefile
+15. + test/helper.rb, test/Nab_test.rb, test/NabComAu/Account_test.rb, test/NabComAu/Bpay_test.rb, test/NabComAu/Transfer_test.rb: Offline, with stand-ins for the browser and its elements.
+
+
+## 20230627
+
+0.2.0: + NabComAu::Bpay, into which the BPAY steps move, and NabComAu::Transfer, begun.
+
+1. + lib/Nab.rb: Nab.to_nab_account_number_format, moved out of lib/NabComAu/Account.rb.
+2. + lib/NabComAu/Bpay.rb: NabComAu::Bpay, a NabComAu::Account, is given a payment's details and makes it with #pay. The bpay_ methods, #transfer_and_pay_button, #bill_payment_link, #new_bill_payment and #new_bill_payment_confirmation move into it.
+3. + lib/NabComAu/Transfer.rb: NabComAu::Transfer, a NabComAu::Account, is given a transfer's source account, target BSB and account number, note and amount. + #transfer_link; its #pay is so far the BPAY steps.
+4. ~ NabComAu::Account#bpay: It makes a NabComAu::Bpay and pays it; - password:.
+5. + NabComAu::Account#transfer, which makes a NabComAu::Transfer and prints it.
+6. + NabComAu::Account: autoload :Bpay, :Transfer
+7. ~ PAGE_IDS: The username field is username, and - login_page_submit_button_id.
+8. + NabComAu::Account#login_page_submit_button, the button reading Login.
+9. ~ NabComAu::Account#login: The waits are back.
+10. /NabComAu::Account#driver=/attr_accessor :driver/
+11. ~ lib/NabComAu/Account.rb: The self-run section is removed.
+
+
+## 20220508
+
+0.1.8: New bill payment confirmation page.
+
+1. + NabComAu::Account#bpay_password_field
+2. + NabComAu::Account#bpay_enter_password
+3. + NabComAu::Account#bpay_new_bill_payment_submit_button
+4. + NabComAu::Account#new_bill_payment_confirmation
+5. ~ NabComAu::Account#bpay, to make use of confirmation methods above; and to make use of a passed in value for password.
+
+
+0.1.7: New bill payment page.
+
+1. + NabComAu::Account#bpay_customer_reference_number_field
+2. + NabComAu::Account#bpay_enter_customer_reference_number
+3. + NabComAu::Account#bpay_payment_amount_field
+4. + NabComAu::Account#bpay_enter_payment_amount
+5. + NabComAu::Account#bpay_new_bill_payment_next_button
+6. + NabComAu::Account#new_bill_payment
+7. ~ NabComAu::Account#bpay, to make use of the methods above.
+
+
+## 20220425, 26
+
+0.1.6: Handle ambiguity when entering biller codes.
+
+1. + NabComAu::Account#login, so as to add delays, possibly temporary.
+2. + NabComAu::Account#bpay_biller_direct_hit?
+3. + NabComAu::Account#bpay_search_result_selection
+4. ~ NabComAu::Account#bpay, to make use of disambiguation methods above.
+
+
+## 20220425
+
+0.1.5: + NabComAu::Account#bpay_enter_biller_name
+
+1. + NabComAu::Account#bpay_biller_name_field
+2. ~ NabComAu::Account#bpay
+
+
+0.1.4: + NabComAu::Account#bpay_submit_button
+
+1. ~ NabComAu::Account#bpay
+2. ~ NabComAu::Account#bpay_bank_account_select_list, to use css name instead of xpath.
+
+
+0.1.3: + NabComAu::Account#bpay_biller_select_list
+
+1. + NabComAu::Account#bpay_biller_code_field
+2. + NabComAu::Account#bpay_select_biller
+3. + NabComAu::Account#bpay_enter_biller_code
+4. ~ NabComAu::Account#bpay
+
+
+0.1.2: + Nab#to_nab_account_number_format
+
+1. ~ NabComAu::Account#bpay_select_bank_account
+
+
+0.1.1: + NabComAu::Account#bpay_bank_account_select_list
+
+1. + NabComAu::Account#bpay_select_bank_account
+2. ~ NabComAu::Account#bpay
+
+
+## 20220424
+
+0.1.0: + NabComAu::Account#bpay
+
+1. + NabComAu::Account#transfer_and_pay_button
+2. + NabComAu::Account#bill_payment_link
+
+
+0.0.0: + lib/NabComAu/Account.rb: NabComAu::Account logs into NAB Internet Banking with a username and password.
