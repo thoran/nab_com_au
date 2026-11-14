@@ -1,9 +1,6 @@
 # Nab.rb
 # Nab
 
-# 20230627
-# 0.0.0
-
 # Notes:
 # 1. Extracted from NabComAu 0.1.8.
 # 2. This is a separate namespace from NabComAu because this isn't website traversal specific.
@@ -13,7 +10,7 @@ module Nab
     return unless account_number.match(/^[\d-]+$/)
     unless account_number.match(/^\d\d-\d\d\d-\d\d\d\d$/)
       unless account_number.match(/^\d\d\d\d\d\d\d\d\d$/)
-        account_number.gsub!('-', '')
+        account_number = account_number.delete('-')
       end
       account_number_parts = account_number.split('')
       new_account_number_parts = []

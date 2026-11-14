@@ -1,3 +1,8 @@
+# NabComAu/Bpay.rb
+# NabComAu::Bpay
+
+require_relative '../Nab'
+
 module NabComAu
   class Bpay < NabComAu::Account
     def initialize(source_bank_account_name_or_number: nil, biller_name_or_code: nil, customer_reference_number: nil, amount: nil)
@@ -170,6 +175,13 @@ module NabComAu
       customer_reference_number ||= @customer_reference_number
       amount ||= @amount
       password ||= @password
+      validate_args(
+        source_bank_account_name_or_number: source_bank_account_name_or_number,
+        biller_name_or_code: biller_name_or_code,
+        customer_reference_number: customer_reference_number,
+        amount: amount,
+        password: password
+      )
       transfer_and_pay_button.click
       sleep 1
       bill_payment_link.click
@@ -192,6 +204,19 @@ module NabComAu
       sleep 1
       new_bill_payment_confirmation(password: password)
       sleep 1
+    end
+
+    private
+
+    def validate_args(args)
+      missing_args = []
+      args.each do |arg_name, value|
+        missing_args << arg_name unless value
+      end
+      return if missing_args.empty?
+      aggregate_error = missing_args.join(', ')
+      copula = missing_args.count > 1 ? 'are' : 'is'
+      raise ArgumentError, "#{aggregate_error} #{copula} missing."
     end
   end
 end
