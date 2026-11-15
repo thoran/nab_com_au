@@ -2,6 +2,14 @@
 
 ## 20261115
 
+0.3.1: ~ NabComAu::Account#login: Names every missing argument at once, by validate_args().
+
+1. ~ NabComAu::Account#login: validate_args(username:, password:), in place of raising upon each in turn.
+2. + NabComAu::Account#validate_args, moved from NabComAu::Bpay, which inherits it.
+3. ~ test/NabComAu/Account_test.rb: The messages for username or password missing, and for both, are tested.
+4. ~ NabComAu::VERSION: /0.3.0/0.3.1/
+
+
 0.3.0: - NabComAu::Account#initialize: Now uses superclass WebAccount; + nab_com_au.gemspec.
 
 1. - NabComAu::Account#initialize, WebAccount's taking the browser's options, such as browser:, profile_directory: and headless:, and reading PAGE_SELECTORS itself.

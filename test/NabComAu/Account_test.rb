@@ -71,14 +71,19 @@ describe NabComAu::Account do
   end
 
   describe "#login" do
-    it "says username: is missing, before using the browser" do
+    it "says username is missing, before using the browser" do
       error = _{account(password: 'password').login}.must_raise ArgumentError
-      _(error.message).must_match(/username:/)
+      _(error.message).must_equal 'username is missing.'
     end
 
-    it "says password: is missing, before using the browser" do
+    it "says password is missing, before using the browser" do
       error = _{account(username: 'username').login}.must_raise ArgumentError
-      _(error.message).must_match(/password:/)
+      _(error.message).must_equal 'password is missing.'
+    end
+
+    it "says both are missing at once, before using the browser" do
+      error = _{account.login}.must_raise ArgumentError
+      _(error.message).must_equal 'username, password are missing.'
     end
   end
 
