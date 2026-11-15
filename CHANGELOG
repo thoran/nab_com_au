@@ -1,5 +1,20 @@
 # nab_com_au/CHANGELOG
 
+## 20261115
+
+0.3.0: - NabComAu::Account#initialize: Now uses superclass WebAccount; + nab_com_au.gemspec.
+
+1. - NabComAu::Account#initialize, WebAccount's taking the browser's options, such as browser:, profile_directory: and headless:, and reading PAGE_SELECTORS itself.
+2. /NabComAu::Account::PAGE_IDS/PAGE_SELECTORS/: Keyed as WebAccount's keywords are, the ids given as selectors; + login_page_submit_button_selector.
+3. - NabComAu::Account#login_page_submit_button, WebAccount's finding the button by login_page_submit_button_selector.
+4. + nab_com_au.gemspec, upon webaccount ~> 0.8.
+5. + lib/nab_com_au.rb
+6. + NabComAu::VERSION
+7. ~ Gemfile: The gemspec's dependencies, in place of its own.
+8. ~ test/NabComAu/Account_test.rb: PAGE_SELECTORS, and WebAccount's initialize with the browser's options, are tested.
+9. ~ lib/NabComAu/Account.rb: ~ Notes: + 2 on new()
+
+
 ## 20261114
 
 0.2.1: Bpay payments working.

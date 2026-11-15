@@ -23,12 +23,41 @@ describe NabComAu::Account do
     NabComAu::Bpay.singleton_class.remove_method(:new)
   end
 
-  describe "#initialize" do
-    it "finds the login fields and the logout button by their ids" do
+  describe "PAGE_SELECTORS" do
+    it "gives NAB's login page, its fields and buttons" do
       account = account()
-      _(account.send(:username_field_selector)).must_equal({id: 'username'})
-      _(account.send(:password_field_selector)).must_equal({id: 'password'})
+      _(account.send(:login_page_url)).must_equal 'https://ib.nab.com.au/nabib/index.jsp'
+      _(account.send(:login_page_username_field_selector)).must_equal({id: 'username'})
+      _(account.send(:login_page_password_field_selector)).must_equal({id: 'password'})
+      _(account.send(:login_page_submit_button_selector)).must_equal({xpath: "//button[contains(text(), 'Login')]"})
       _(account.send(:logout_button_selector)).must_equal({id: 'logoutButton'})
+    end
+
+    it "gives way to a keyword given to new()" do
+      account = account(login_page_url: 'https://example.com/login')
+      _(account.send(:login_page_url)).must_equal 'https://example.com/login'
+    end
+
+    it "is a Bpay's too" do
+      _(NabComAu::Bpay.new.send(:login_page_url)).must_equal 'https://ib.nab.com.au/nabib/index.jsp'
+    end
+  end
+
+  describe "#initialize" do
+    it "is WebAccount's" do
+      _(NabComAu::Account.instance_method(:initialize).owner).must_equal WebAccount
+    end
+
+    it "takes the browser's options" do
+      account = NabComAu::Account.new(browser: :firefox, profile_directory: '/profile', headless: true)
+      _(account.send(:browser)).must_equal :firefox
+      _(account.instance_variable_get(:@profile_directory)).must_equal '/profile'
+      _(account.instance_variable_get(:@headless)).must_equal true
+    end
+
+    it "says which keyword is mistyped" do
+      error = _{NabComAu::Account.new(brower: :firefox)}.must_raise ArgumentError
+      _(error.message).must_match(/brower/)
     end
   end
 
