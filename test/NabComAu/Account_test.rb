@@ -10,6 +10,27 @@ describe NabComAu::Account do
     NabComAu::Account.new(**args).tap{|account| account.driver = untouchable_driver}
   end
 
+  # A browser on which the login page's fields and button are stand-ins, and the logout button is present or not as given.
+  def login_driver(logged_in:)
+    elements = Hash.new{|hash, selector| hash[selector] = StandInElement.new}
+    driver = Object.new
+    driver.define_singleton_method(:attempt){|&block| block.call}
+    driver.define_singleton_method(:get){|url| @url = url}
+    driver.define_singleton_method(:url){@url}
+    driver.define_singleton_method(:find_element){|how, what| elements[{how => what}]}
+    driver.define_singleton_method(:element_present?){|how, what| logged_in}
+    [driver, elements]
+  end
+
+  def logging_in_account(logged_in:)
+    driver, elements = login_driver(logged_in: logged_in)
+    account = NabComAu::Account.new(username: 'username', password: 'password')
+    account.driver = driver
+    account.define_singleton_method(:sleep){|*|}
+    account.define_singleton_method(:default_login_timeout){0.1}
+    [account, elements]
+  end
+
   def recording_bpay_pay
     calls = []
     NabComAu::Bpay.define_singleton_method(:new) do |**payment|
@@ -30,7 +51,7 @@ describe NabComAu::Account do
       _(account.send(:login_page_username_field_selector)).must_equal({id: 'username'})
       _(account.send(:login_page_password_field_selector)).must_equal({id: 'password'})
       _(account.send(:login_page_submit_button_selector)).must_equal({xpath: "//button[contains(text(), 'Login')]"})
-      _(account.send(:logout_button_selector)).must_equal({id: 'logoutButton'})
+      _(account.send(:logout_button_selector)).must_equal({xpath: "//button[@aria-label='Logout']"})
       _(account.logged_out_selector).must_equal({xpath: "//*[contains(text(), 'You have been successfully logged out.')]"})
     end
 
@@ -92,6 +113,26 @@ describe NabComAu::Account do
     it "says both are missing at once, before using the browser" do
       error = _{account.login}.must_raise ArgumentError
       _(error.message).must_equal 'username, password are missing.'
+    end
+
+    it "enters the username and password, submits them, and is logged in once the logout button is there" do
+      account, elements = logging_in_account(logged_in: true)
+      account.login
+      _(account.driver.url).must_equal 'https://ib.nab.com.au/nabib/index.jsp'
+      _(elements[{id: 'username'}].typed).must_equal ['username']
+      _(elements[{id: 'password'}].typed).must_equal ['password']
+      _(elements[{xpath: "//button[contains(text(), 'Login')]"}].clicked?).must_equal true
+      _(account.logged_in?).must_equal true
+    end
+
+    it "gives up waiting for the logout button after default_login_timeout, not being logged in" do
+      account, _elements = logging_in_account(logged_in: false)
+      _{account.login}.must_raise Selenium::WebDriver::Error::TimeoutError
+      _(account.logged_in?).must_equal false
+    end
+
+    it "waits three minutes for the logout button, by default" do
+      _(account.send(:default_login_timeout)).must_equal 180
     end
   end
 

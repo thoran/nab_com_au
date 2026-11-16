@@ -33,7 +33,7 @@ $ gem install nab_com_au
     customer_reference_number: '5678',
     amount: '1.00'
   )
-  nab_account.shutdown # Quits the browser.
+  nab_account.shutdown # Logs out, and quits the browser.
 ```
 The payment is made: `bpay` goes through NAB's confirmation page, entering the password there, and submits it.
 
@@ -50,6 +50,8 @@ The username is the NAB ID. It and the password are given, or set afterwards:
 ```
 Where either is missing, `login` raises ArgumentError before starting the browser, naming every one missing. `bpay` does the same for the payment's details and the password.
 
+NAB then sends a code by SMS, which is entered in the browser: `login` waits up to three minutes for it, and for the accounts to appear, so the browser can't be headless.
+
 ### The browser
 
 The browser is WebAccount's: Chrome, unless `browser: :firefox` is given. Given a `profile_directory`, it's started with that profile, kept between runs; without one, each run has a new, temporary profile.
@@ -62,8 +64,6 @@ The browser is WebAccount's: Chrome, unless `browser: :firefox` is given. Given 
 ## Limitations
 
 Transfers aren't made yet: `transfer` raises NotImplementedError.
-
-`login` doesn't wait to see that it's logged in, so `logged_in?` stays false, and `shutdown` quits the browser without logging out. `logout` logs out.
 
 The selectors were taken from the live site, and a change to it will break them. Each key of `NabComAu::Account::PAGE_SELECTORS` is also a keyword of `new`, and has a setter, either of which wins over NAB's, so as a selector which has changed can be given without waiting for a new version:
 ```ruby

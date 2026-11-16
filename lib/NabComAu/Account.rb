@@ -4,6 +4,8 @@
 # Notes:
 # 1. Searching by BPay biller code produces a substring match, hence even if the biller code is complete and correct, then an extra step is required.
 # 2. new() is WebAccount's: it takes the browser's options, such as browser:, profile_directory: and headless:, and NAB's pages come from PAGE_SELECTORS, unless a keyword is given in place of one.
+# 3. NAB's logout button appears twice, as text and as an icon, each with the id logoutInternetBanking, so as the text one is chosen by its label.
+# 4. login() waits for the logout button for as long as default_login_timeout, so as the code NAB sends by SMS can be entered in the browser.
 
 require 'webaccount'
 
@@ -18,7 +20,7 @@ module NabComAu
       login_page_username_field_selector: {id: 'username'},
       login_page_password_field_selector: {id: 'password'},
       login_page_submit_button_selector: {xpath: "//button[contains(text(), 'Login')]"},
-      logout_button_selector: {id: 'logoutButton'},
+      logout_button_selector: {xpath: "//button[@aria-label='Logout']"},
       logged_out_selector: {xpath: "//*[contains(text(), 'You have been successfully logged out.')]"}
     }
 
@@ -37,6 +39,9 @@ module NabComAu
         enter_password(password)
         sleep 3
         login_page_submit_button.click
+      end
+      @logged_in = login_wait.until do
+        driver.element_present?(logout_button_selector.keys.first, logout_button_selector.values.first)
       end
     end
 
@@ -61,6 +66,17 @@ module NabComAu
       )
       transfer.driver = driver
       transfer.pay
+    end
+
+    private
+
+    # For logging in: the code sent by SMS, as well as the authentication and the redirect.
+    def default_login_timeout
+      180
+    end
+
+    def login_wait
+      @login_wait ||= Selenium::WebDriver::Wait.new(timeout: default_login_timeout)
     end
   end
 end

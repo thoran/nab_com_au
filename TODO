@@ -1,0 +1,4 @@
+# TODO
+
+1. NabComAu::Account::PAGE_SELECTORS: login_page_submit_button_selector: {id: 'loginButton'}, in place of matching the button's text.
+2. NabComAu::Transfer#pay: Make a transfer, once the transfer page's fields are worked out.

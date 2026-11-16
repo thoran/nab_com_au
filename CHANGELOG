@@ -2,6 +2,19 @@
 
 ## 20261116
 
+0.5.0: ~ NabComAu::Account#login: Waits for the SMS code and the logout button; ~ NabComAu::Account::PAGE_SELECTORS: NAB's new logout button.
+
+1. ~ NabComAu::Account#login: Waits up to default_login_timeout for the logout button and sets @logged_in, so as shutdown logs out.
+2. + NabComAu::Account#default_login_timeout: Three minutes, for the code NAB now sends by SMS.
+3. + NabComAu::Account#login_wait
+4. ~ NabComAu::Account::PAGE_SELECTORS: logout_button_selector: /{id: 'logoutButton'}/{xpath: "//button[@aria-label='Logout']"}/, since the new button's id is shared with an icon of it.
+5. ~ lib/NabComAu/Account.rb: ~ Notes: + 3 on the logout button, 4 on waiting for the SMS code.
+6. ~ test/NabComAu/Account_test.rb: Logging in, and giving up waiting, are tested.
+7. ~ README.md: Credentials say a code is sent by SMS; Limitations lose the note on login not waiting.
+8. + TODO
+9. ~ NabComAu::VERSION: /0.4.2/0.5.0/
+
+
 0.4.2: + README.md, + LICENSE
 
 1. + README.md
