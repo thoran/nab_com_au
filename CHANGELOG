@@ -1,5 +1,15 @@
 # nab_com_au/CHANGELOG
 
+## 20261116
+
+0.4.1: - NabComAu::Account#validate_args: Now uses superclass WebAccount's.
+
+1. - NabComAu::Account#validate_args, webaccount 0.10's being the same.
+2. ~ nab_com_au.gemspec: webaccount /'~> 0.9'/'~> 0.10'/
+3. ~ test/NabComAu/Account_test.rb: That validate_args is WebAccount's is tested.
+4. ~ NabComAu::VERSION: /0.4.0/0.4.1/
+
+
 ## 20261115
 
 0.4.0: ~ NabComAu::Account::PAGE_SELECTORS: /logged_out_xpath/logged_out_selector/, NAB's logged-out notice, upon webaccount 0.9.

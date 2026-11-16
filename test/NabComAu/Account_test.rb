@@ -62,6 +62,13 @@ describe NabComAu::Account do
     end
   end
 
+  describe "#validate_args" do
+    it "is WebAccount's" do
+      _(NabComAu::Account.instance_method(:validate_args).owner).must_equal WebAccount
+      _(NabComAu::Bpay.instance_method(:validate_args).owner).must_equal WebAccount
+    end
+  end
+
   describe "#driver=" do
     it "is the browser driven, none being started" do
       driver = untouchable_driver
