@@ -2,6 +2,14 @@
 
 ## 20261116
 
+0.4.2: + README.md, + LICENSE
+
+1. + README.md
+2. + LICENSE
+3. ~ nab_com_au.gemspec: README.md and LICENSE are among the files; the description no longer speaks of stopping at the confirmation page, which 0.3.0 dropped.
+4. ~ NabComAu::VERSION: /0.4.1/0.4.2/
+
+
 0.4.1: - NabComAu::Account#validate_args: Now uses superclass WebAccount's.
 
 1. - NabComAu::Account#validate_args, webaccount 0.10's being the same.

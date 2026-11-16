@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   spec.version = NabComAu::VERSION
 
   spec.summary = "Pay bills by BPAY from NAB Internet Banking via Selenium WebDriver."
-  spec.description = "Log into NAB Internet Banking with a username and password, and pay a bill by BPAY from an account, going as far as the confirmation page unless told to confirm."
+  spec.description = "Log into NAB Internet Banking with a username and password, and pay a bill by BPAY from an account."
 
   spec.author = 'thoran'
   spec.email = 'code@thoran.com'
@@ -31,7 +31,9 @@ Gem::Specification.new do |spec|
     Dir['test/**/*.rb'],
     'CHANGELOG',
     'Gemfile',
+    'LICENSE',
     'Rakefile',
+    'README.md',
   ].flatten
 
   spec.dependencies = [
