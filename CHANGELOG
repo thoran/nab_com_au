@@ -2,6 +2,14 @@
 
 ## 20261115
 
+0.4.0: ~ NabComAu::Account::PAGE_SELECTORS: /logged_out_xpath/logged_out_selector/, NAB's logged-out notice, upon webaccount 0.9.
+
+1. ~ NabComAu::Account::PAGE_SELECTORS: logged_out_xpath: '' is replaced by logged_out_selector:, matching NAB's "You have been successfully logged out." notice.
+2. ~ nab_com_au.gemspec: webaccount /'~> 0.8'/'~> 0.9'/
+3. ~ test/NabComAu/Account_test.rb: The logged-out selector is tested.
+4. ~ NabComAu::VERSION: /0.3.1/0.4.0/
+
+
 0.3.1: ~ NabComAu::Account#login: Names every missing argument at once, by validate_args().
 
 1. ~ NabComAu::Account#login: validate_args(username:, password:), in place of raising upon each in turn.

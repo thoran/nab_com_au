@@ -19,7 +19,7 @@ module NabComAu
       login_page_password_field_selector: {id: 'password'},
       login_page_submit_button_selector: {xpath: "//button[contains(text(), 'Login')]"},
       logout_button_selector: {id: 'logoutButton'},
-      logged_out_xpath: ''
+      logged_out_selector: {xpath: "//*[contains(text(), 'You have been successfully logged out.')]"}
     }
 
     attr_writer :driver

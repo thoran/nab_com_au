@@ -31,6 +31,7 @@ describe NabComAu::Account do
       _(account.send(:login_page_password_field_selector)).must_equal({id: 'password'})
       _(account.send(:login_page_submit_button_selector)).must_equal({xpath: "//button[contains(text(), 'Login')]"})
       _(account.send(:logout_button_selector)).must_equal({id: 'logoutButton'})
+      _(account.logged_out_selector).must_equal({xpath: "//*[contains(text(), 'You have been successfully logged out.')]"})
     end
 
     it "gives way to a keyword given to new()" do
